@@ -1,0 +1,8 @@
+{
+  "endpoint": "/enrich/company?domain={website}",
+  "sample_response": {
+    "industry": "Technology",
+    "revenue": "100M",
+    "headcount": "500"
+  }
+}
