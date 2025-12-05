@@ -7,7 +7,12 @@ Runs in <5 seconds on sample data. Scales cleanly to 20 M+ rows/day.
 
 ## Quick Start
 
+
 ```bash
+# Clone and enter directory
+git clone https://github.com/Jayson-gor/Hillwind_DE_Assessment.git
+cd Hillwind_DE_Assessment
+
 # Run complete pipeline (SQL + ETL)
 docker-compose run --rm app bash -c "python src/sql_analysis.py && python src/etl.py"
 

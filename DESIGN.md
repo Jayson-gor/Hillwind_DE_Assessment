@@ -6,7 +6,7 @@ This document outlines a proposed dbt structure for the data pipeline, covering 
 
 ## 1. Source Configuration (`sources.yml`)
 
-Before building models, we define our sources with freshness checks:
+Before building models, I define my sources with freshness checks:
 
 ```yaml
 # models/staging/sources.yml
@@ -145,7 +145,7 @@ WHERE service_date > (SELECT MAX(service_date) FROM {{ this }})
 | `fct_claims` | `incremental` (merge) | `claim_id` | `service_date > max(service_date)` |
 | `fct_employee_plan_coverage` | `incremental` (merge) | `employee_id + plan_id` | `updated_at > max(updated_at)` |
 
-**Key Design Decision:** Staging models are views (not incremental) because raw CSV sources lack reliable `last_updated` timestamps. Incrementalism starts at the mart layer where we control the grain and have proper audit columns.
+**Key Design Decision:** Staging models are views (not incremental) because raw CSV sources lack reliable `last_updated` timestamps. Incrementalism starts at the mart layer where I control the grain and have proper audit columns.
 
 ---
 
@@ -323,7 +323,7 @@ A new upstream feed starts delivering ~20M rows/day → warehouse costs triple, 
 | 15–22 min | In the same compiled SQL, progressively comment out CTEs/joins and replace with `SELECT COUNT(*) FROM cte_x` until row count jumps from millions → billions → **found the exact exploding CTE** | Pinpoint the regressive join |
 | 22–30 min | Run: `SELECT join_key, COUNT(*) c FROM <exploding_table> GROUP BY 1 ORDER BY c DESC LIMIT 20` and same on the other side of the join | Identify duplicate or null keys causing the explosion |
 
-→ In 95% of real incidents, this gets you to the exact bad key in <25 minutes.
+
 
 ---
 
