@@ -63,10 +63,10 @@ def run_etl():
     employees_df, plans_df, claims_df = ingest_data(last_run_timestamp)
     metrics['rows_in'] = len(employees_df)
     
-    # If no new data, ensure output files exist with proper structure
+    #Ensuring output files exist with proper structure, when no new data
     if employees_df.empty and claims_df.empty and plans_df.empty:
         logger.info("No new data to process.")
-        # Ensure validation errors file exists with headers
+        # Ensuring validation errors file exists with headers
         if not os.path.exists(VALIDATION_ERRORS_PATH):
             pd.DataFrame(columns=['row_id', 'field', 'error_reason']).to_csv(VALIDATION_ERRORS_PATH, index=False)
         # Don't update watermark if no data processed
@@ -76,22 +76,22 @@ def run_etl():
         return
 
     # 3. Clean Data
-    # (For this exercise, we'll merge and clean the employee data primarily)
+    #Merging and cleaning the employee data primarily
     clean_df, errors_df, clean_metrics = clean_data(employees_df)
     metrics.update(clean_metrics)
     metrics['errors'] = len(errors_df)
     logger.info(f"Found {len(errors_df)} validation errors during cleaning.")
 
-    # 4. Enrich Data
+    # 4. Enriching Data
     enriched_df, enrich_metrics = enrich_data(clean_df)
     metrics.update(enrich_metrics)
     logger.info("Data enrichment complete.")
 
-    # 5. Save Outputs
+    # 5. Saving Outputs
     save_metrics = save_outputs(enriched_df, errors_df)
     metrics.update(save_metrics)
 
-    # 6. Update High-Water Mark
+    # 6. Updating High-Water Mark
     update_high_water_mark()
 
     logger.info("ETL process finished successfully.")
@@ -106,7 +106,7 @@ def run_etl():
 def get_high_water_mark():
     """Reads the high-water mark from a file."""
     if not os.path.exists(WATERMARK_PATH):
-        # Use a realistic minimum date that pandas can handle
+        # Using a realistic minimum date that pandas can handle
         return '1900-01-01T00:00:00'
     with open(WATERMARK_PATH, 'r') as f:
         return f.read().strip()
@@ -120,21 +120,20 @@ def ingest_data(last_run_timestamp):
     """Ingests data from CSVs, filtering for new/updated rows."""
     logger.info("Ingesting data...")
     
-    # Use the appropriate date columns for incremental filtering.
+    # Using the appropriate date columns for incremental filtering.
     employees_df = pd.read_csv(EMPLOYEES_PATH, header=0, parse_dates=['start_date'])
     claims_df = pd.read_csv(CLAIMS_PATH, header=0, parse_dates=['service_date'])
     plans_df = pd.read_csv(PLANS_PATH, header=0)
 
-    # Filter based on high-water mark using the correct date columns
+    # Filtering based on high-water mark using the correct date columns
     employees_df = employees_df[employees_df['start_date'] > pd.to_datetime(last_run_timestamp)]
-    # For claims, we'll also use its date column.
+    # Filtering using claims date column for claims.
     claims_df = claims_df[claims_df['service_date'] > pd.to_datetime(last_run_timestamp)]
 
     logger.info(f"Ingested {len(employees_df)} new/updated employee rows based on 'start_date'.")
     logger.info(f"Ingested {len(claims_df)} new/updated claim rows based on 'service_date'.")
     
-    # In a real scenario, you'd merge claims and plans into the employee data.
-    # For this exercise, we will focus on cleaning and enriching the employee data.
+
     return employees_df, plans_df, claims_df
 
 def clean_data(df):
@@ -155,7 +154,7 @@ def clean_data(df):
 
     errors = []
     clean_df = df.copy()
-    # Use original index as row_id for traceability
+    # Using original index as row_id for traceability
     clean_df['row_id'] = clean_df.index
 
     # 1. Deduplication
@@ -182,8 +181,7 @@ def clean_data(df):
     clean_df = clean_df[valid_emails]
 
     # 3. Date Coercion/Validation
-    # The ingest step already tried parsing, but we can check for NaT (Not a Time) values
-    # that result from failed parsing.
+
     date_cols = ['start_date', 'end_date', 'last_updated']
     for col in date_cols:
         if col in clean_df.columns:
@@ -288,7 +286,7 @@ def enrich_data(df):
         for i in range(retries):
             try:
                 # In a real scenario, this would be a requests.get() call
-                # Here we just look up the data from our mock file
+                # Here I just look up the data from the mock file
                 if person_id in api_mock_data:
                     # Simulate success
                     result = api_mock_data[person_id]
